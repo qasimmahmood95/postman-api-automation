@@ -617,7 +617,7 @@
 								}
 							}
 						},
-						"url": "{{baseUrl}}/booking/{{bookingId}}",
+						"url": "{{baseUrl}}/booking/1",
 						"description": "Generated from cURL: curl -X PUT \\\r\n  https://restful-booker.herokuapp.com/booking/1 \\\r\n  -H 'Content-Type: application/json' \\\r\n  -H 'Accept: application/json' \\\r\n  -H 'Cookie: token=abc123' \\\r\n  -d '{\r\n    \"firstname\" : \"James\",\r\n    \"lastname\" : \"Brown\",\r\n    \"totalprice\" : 111,\r\n    \"depositpaid\" : true,\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"2018-01-01\",\r\n        \"checkout\" : \"2019-01-01\"\r\n    },\r\n    \"additionalneeds\" : \"Breakfast\"\r\n}'"
 					},
 					"response": []
@@ -655,7 +655,7 @@
 								"value": "token=abc123"
 							}
 						],
-						"url": "{{baseUrl}}/booking/{{bookingId}}",
+						"url": "{{baseUrl}}/booking/1",
 						"description": "Generated from cURL: curl -X DELETE \\\r\n  https://restful-booker.herokuapp.com/booking/1 \\\r\n  -H 'Content-Type: application/json' \\\r\n  -H 'Cookie: token=abc123'"
 					},
 					"response": []
