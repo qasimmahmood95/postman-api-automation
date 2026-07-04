@@ -3,7 +3,7 @@
 Production-grade API test automation for the [Restful Booker](https://restful-booker.herokuapp.com) hotel-booking API, built with Postman collections and executed headlessly with Newman in CI.
 
 [![API Tests](https://github.com/qasimmahmood95/postman-api-automation/actions/workflows/api-tests.yml/badge.svg)](https://github.com/qasimmahmood95/postman-api-automation/actions/workflows/api-tests.yml)
-![Postman](https://img.shields.io/badge/Postman-Collection%20v2.1-FF6C37?logo=postman&logoColor=white)
+![Postman](https://img.shields.io/badge/Postman-Collection%20v2.0-FF6C37?logo=postman&logoColor=white)
 ![Newman](https://img.shields.io/badge/Newman-%5E6-2E2E2E)
 ![Node](https://img.shields.io/badge/Node-22.x-339933?logo=node.js&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-blue)
@@ -35,6 +35,7 @@ The suite is designed the way a production regression pack should be: one collec
 | Create Token | POST | Status 200, schema, token captured for downstream requests, SLA |
 | **Booking CRUD** | | |
 | Create Booking | POST | Status 200, schema, echoed payload matches generated data, `bookingid` captured |
+| Get Booking IDs | GET | Status 200, schema, non-empty list, contains the newly created `bookingid` |
 | Get Booking | GET | Status 200, schema, body matches created data |
 | Update Booking (full) | PUT | Status 200, schema, all fields reflect update payload |
 | Partial Update | PATCH | Status 200, schema, patched fields changed, others intact |

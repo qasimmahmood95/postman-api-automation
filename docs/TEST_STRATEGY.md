@@ -2,7 +2,7 @@
 
 **Author:** Qasim Mahmood, Senior SDET
 **System under test:** Restful Booker (https://restful-booker.herokuapp.com) — a public hotel-booking practice API
-**Tooling:** Postman (Collection v2.1) + Newman ^6 + newman-reporter-htmlextra + GitHub Actions
+**Tooling:** Postman (Collection v2.0) + Newman ^6 + newman-reporter-htmlextra + GitHub Actions
 
 ---
 
@@ -35,7 +35,7 @@ This suite sits at the **API/service layer** of the test pyramid — above unit 
 | Technique | Where applied |
 |---|---|
 | **State-transition testing** | The Booking CRUD folder models the resource lifecycle as an explicit chain: create → read → update (PUT) → partial update (PATCH) → delete → verify-404. State (booking ID, auth token) flows between requests via collection variables, so the chain proves each transition — including the terminal state — rather than testing endpoints in isolation. |
-| **Equivalence partitioning & boundary values** | `data/booking-test-data.json` defines 3 booking profiles spanning partitions: a typical booking, an edge-value profile (zero/large price, minimal-length names, boundary dates, empty `additionalneeds`), and a distinct valid variant. Each iteration exercises the full lifecycle. |
+| **Equivalence partitioning & boundary values** | `data/booking-test-data.json` defines 3 booking profiles spanning partitions: a typical booking; a boundary profile (price `0`, `depositpaid: false`, single-night stay, minimal-length names, empty `additionalneeds`); and a stress/i18n profile (price `99999`, accented and apostrophe names, a stay crossing a year boundary). Each iteration exercises the full lifecycle. |
 | **Negative testing** | Dedicated folder: invalid field types, missing required fields, syntactically malformed JSON, wrong credentials, and mutation attempts with invalid tokens. Authorization negatives (403 on PUT/DELETE without a valid token) are treated as the highest-value cases. |
 | **Schema/contract validation** | Every key response is asserted with `pm.response.to.have.jsonSchema(...)` (ajv under the hood): required fields, types, and nested `bookingdates` structure. This catches silent contract drift that status-code checks miss. |
 | **Performance thresholds** | A collection-level test asserts `pm.response.responseTime` against the `maxResponseTimeMs` environment variable. Defining it once at collection level and parameterizing per environment avoids scattering magic numbers and lets the local Docker environment use a tighter budget than the shared Heroku instance. |

@@ -9,13 +9,13 @@
     "additionalneeds": "Breakfast"
   },
   {
-    "firstname": "Bilal",
-    "lastname": "Khan",
-    "totalprice": 1,
+    "firstname": "Al",
+    "lastname": "Ng",
+    "totalprice": 0,
     "depositpaid": false,
     "checkin": "2026-09-15",
     "checkout": "2026-09-16",
-    "additionalneeds": "Late checkout"
+    "additionalneeds": ""
   },
   {
     "firstname": "Chloé",
