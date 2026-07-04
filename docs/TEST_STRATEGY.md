@@ -34,7 +34,7 @@ This suite sits at the **API/service layer** of the test pyramid — above unit 
 
 | Technique | Where applied |
 |---|---|
-| **State-transition testing** | The Booking CRUD folder models the resource lifecycle as an explicit chain: create → read → update (PUT) → partial update (PATCH) → delete → verify-404. State (booking ID, auth token) flows between requests via collection variables, so the chain proves each transition — including the terminal state — rather than testing endpoints in isolation. |
+| **State-transition testing** | The Booking CRUD folder models the resource lifecycle as an explicit chain: create → list (new ID present) → read → update (PUT) → partial update (PATCH) → delete → verify-404. State (booking ID, auth token) flows between requests via collection variables, so the chain proves each transition — including the terminal state — rather than testing endpoints in isolation. |
 | **Equivalence partitioning & boundary values** | `data/booking-test-data.json` defines 3 booking profiles spanning partitions: a typical booking; a boundary profile (price `0`, `depositpaid: false`, single-night stay, minimal-length names, empty `additionalneeds`); and a stress/i18n profile (price `99999`, accented and apostrophe names, a stay crossing a year boundary). Each iteration exercises the full lifecycle. |
 | **Negative testing** | Dedicated folder: invalid field types, missing required fields, syntactically malformed JSON, wrong credentials, and mutation attempts with invalid tokens. Authorization negatives (403 on PUT/DELETE without a valid token) are treated as the highest-value cases. |
 | **Schema/contract validation** | Every key response is asserted with `pm.response.to.have.jsonSchema(...)` (ajv under the hood): required fields, types, and nested `bookingdates` structure. This catches silent contract drift that status-code checks miss. |
@@ -68,7 +68,7 @@ Environments differ **only in data** (`baseUrl`, `maxResponseTimeMs`, credential
 
 The `API Tests` workflow (`.github/workflows/api-tests.yml`):
 
-- **Triggers:** push and PR to `main` (regression gate), nightly cron at 02:30 UTC (drift detection against the live API), and `workflow_dispatch` with an environment input (on-demand runs against either target).
+- **Triggers:** push and PR to `main` (regression gate), nightly cron at 02:30 UTC (drift detection against the live API), and `workflow_dispatch` with an environment input — `production` targets the hosted API, `local` starts Restful Booker in Docker on the runner for a fully isolated run.
 - **Steps:** checkout → Node 22 setup → `npm ci` (lockfile-pinned toolchain) → full collection run with CLI + htmlextra + JUnit reporters → a separate data-driven step running 3 iterations from the data file → artifact upload (also on failure — failed runs are when reports matter most) → step-summary results table.
 - **Fork-friendly by design:** no repository secrets are required, so a fork's first push gets a green (or honestly red) pipeline with zero setup.
 
@@ -78,7 +78,7 @@ The `API Tests` workflow (`.github/workflows/api-tests.yml`):
 
 - The nightly target is a shared public instance: transient 5xx/latency noise from other users or Heroku cold starts can cause flakes unrelated to code changes.
 - The CRUD chain is sequential by design; a mid-chain failure cascades into downstream failures (mitigated by the HTML report making the first failure obvious).
-- Schema definitions are maintained by hand inside the collection rather than derived from a source-of-truth spec.
+- Schema definitions are maintained by hand (as a single `bookingSchema` collection variable shared by all schema assertions) rather than derived from a source-of-truth spec.
 - SLA assertions are a guardrail, not a performance test — single-sample response times against a shared host are indicative only.
 
 **Planned improvements**

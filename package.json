@@ -5,10 +5,10 @@
   "private": true,
   "scripts": {
     "test": "newman run collections/restful-booker.postman_collection.json -e environments/production.postman_environment.json --reporters cli",
-    "test:local": "newman run collections/restful-booker.postman_collection.json -e environments/local.postman_environment.json --reporters cli",
-    "test:data": "newman run collections/restful-booker.postman_collection.json -e environments/production.postman_environment.json -d data/booking-test-data.json --reporters cli",
-    "test:report": "newman run collections/restful-booker.postman_collection.json -e environments/production.postman_environment.json --reporters cli,htmlextra,junit --reporter-htmlextra-export reports/html/index.html --reporter-junit-export reports/junit/results.xml",
-    "test:smoke": "newman run collections/restful-booker.postman_collection.json -e environments/production.postman_environment.json --folder \"Health Check\" --reporters cli"
+    "test:local": "npm test -- -e environments/local.postman_environment.json",
+    "test:data": "npm test -- -d data/booking-test-data.json",
+    "test:report": "npm test -- --reporters cli,htmlextra,junit --reporter-htmlextra-export reports/html/index.html --reporter-junit-export reports/junit/results.xml",
+    "test:smoke": "npm test -- --folder \"Health Check\""
   },
   "keywords": [
     "postman",

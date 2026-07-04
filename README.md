@@ -16,7 +16,7 @@ The suite is designed the way a production regression pack should be: one collec
 
 ## Highlights
 
-- **Full CRUD state-transition chain** — create → read → update → patch → delete → verify-404, with state (booking ID, auth token) passed between requests via collection variables.
+- **Full CRUD state-transition chain** — create → list (contains new ID) → read → update → patch → delete → verify-404, with state (booking ID, auth token) passed between requests via collection variables.
 - **JSON Schema validation** on all key responses (`pm.response.to.have.jsonSchema`, backed by ajv) — contract drift fails the build.
 - **Response-time SLA** asserted at collection level, driven by the `maxResponseTimeMs` environment variable — tune per environment, not per request.
 - **Dynamic test data** — pre-request scripts pull from Newman iteration data (`-d`) with fallback to Postman dynamic variables, so the same collection runs standalone or data-driven with zero edits.
@@ -43,7 +43,7 @@ The suite is designed the way a production regression pack should be: one collec
 | Verify Deletion | GET | Status 404 — confirms lifecycle completed |
 | **Negative Scenarios** | | |
 | Create with invalid types | POST | Actual API behavior asserted (500 where 400 would be correct — documented quirk) |
-| Create with missing fields | POST | Error status asserted, no resource created |
+| Create with missing fields | POST | Error status and error body asserted (500 — documented quirk) |
 | Malformed JSON body | POST | Error status asserted |
 | Auth with bad credentials | POST | No token issued, error reason asserted |
 | Update with invalid token | PUT | Status 403 |
@@ -126,7 +126,7 @@ The **API Tests** workflow (`.github/workflows/api-tests.yml`) runs on:
 
 - **Push / pull request** to `main`
 - **Nightly cron** at 02:30 UTC — catches upstream API drift between commits
-- **Manual dispatch** with an environment choice input
+- **Manual dispatch** with an environment choice — `production` (hosted API) or `local`, which spins up Restful Booker in Docker on the runner and tests against it in full isolation
 
 Pipeline: `npm ci` → full collection run with CLI + htmlextra + JUnit reporters → separate data-driven step (3 iterations) → artifact upload → step-summary table of results.
 
