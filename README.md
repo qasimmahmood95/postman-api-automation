@@ -8,6 +8,8 @@ Production-grade API test automation for the [Restful Booker](https://restful-bo
 ![Node](https://img.shields.io/badge/Node-22.x-339933?logo=node.js&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 
+**[View the live test report](https://qasimmahmood95.github.io/postman-api-automation/)** — the latest htmlextra dashboard, republished by every run on `main`.
+
 ## Overview
 
 This repository contains an end-to-end API test suite covering health checks, token-based authentication, the full booking CRUD lifecycle, and a dedicated negative-testing pack against the public Restful Booker API — a deliberately quirky practice API by Mark Winteringham. Every key response is validated against a JSON Schema, all functional assertions compare against dynamically generated test data (never hardcoded literals), and a collection-level response-time SLA is enforced via an environment variable.
@@ -119,6 +121,7 @@ npm run test:local
 
 - `npm run test:report` writes an **htmlextra** HTML dashboard (request/response detail, pass/fail breakdown, iteration view) and a **JUnit XML** file to `reports/`.
 - In CI, every run uploads two artifacts — `newman-html-report` and `newman-junit-results` — retained for 30 days, plus a results table in the GitHub Actions step summary.
+- Runs on `main` (pushes and the nightly cron) also publish the HTML report to **[GitHub Pages](https://qasimmahmood95.github.io/postman-api-automation/)**, so the latest results are one click away — including failed runs, which publish honestly rather than leaving a stale green dashboard.
 
 ## CI/CD
 
@@ -128,7 +131,7 @@ The **API Tests** workflow (`.github/workflows/api-tests.yml`) runs on:
 - **Nightly cron** at 02:30 UTC — catches upstream API drift between commits
 - **Manual dispatch** with an environment choice — `production` (hosted API) or `local`, which spins up Restful Booker in Docker on the runner and tests against it in full isolation
 
-Pipeline: `npm ci` → full collection run with CLI + htmlextra + JUnit reporters → separate data-driven step (3 iterations) → artifact upload → step-summary table of results.
+Pipeline: `npm ci` → full collection run with CLI + htmlextra + JUnit reporters → separate data-driven step (3 iterations) → artifact upload → step-summary table of results → HTML report published to GitHub Pages (main runs only).
 
 The pipeline needs **no secrets** — Restful Booker's credentials are public practice values, so anyone can fork this repo and CI works immediately.
 

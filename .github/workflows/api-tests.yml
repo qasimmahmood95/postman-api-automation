@@ -120,3 +120,41 @@ jobs:
             console.log(`| ${f.replace('.json', '')} | ${s.iterations.total} | ${s.requests.total} | ${s.assertions.total} | ${s.assertions.failed} |`);
           }
           EOF
+
+  publish-report:
+    name: Publish HTML report to GitHub Pages
+    # Only runs from main (push or nightly). Publishes even when tests fail —
+    # a red report on the dashboard is more honest than a stale green one.
+    if: ${{ !cancelled() && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'schedule') }}
+    needs: api-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Download HTML report artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: newman-html-report
+          path: site
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
