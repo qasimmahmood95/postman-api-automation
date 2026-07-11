@@ -1,0 +1,28 @@
+{
+  "name": "postman-api-automation",
+  "version": "1.0.0",
+  "description": "Production-grade API test automation for the Restful Booker API using Postman and Newman",
+  "private": true,
+  "scripts": {
+    "test": "newman run collections/restful-booker.postman_collection.json -e environments/production.postman_environment.json --reporters cli",
+    "test:local": "npm test -- -e environments/local.postman_environment.json",
+    "test:data": "npm test -- -d data/booking-test-data.json",
+    "test:report": "npm test -- --reporters cli,htmlextra,junit --reporter-htmlextra-export reports/html/index.html --reporter-junit-export reports/junit/results.xml",
+    "test:smoke": "npm test -- --folder \"Health Check\""
+  },
+  "keywords": [
+    "postman",
+    "newman",
+    "api-testing",
+    "test-automation",
+    "restful-booker",
+    "sdet",
+    "ci-cd"
+  ],
+  "author": "Qasim Mahmood",
+  "license": "MIT",
+  "devDependencies": {
+    "newman": "^6.2.1",
+    "newman-reporter-htmlextra": "^1.23.1"
+  }
+}
