@@ -1,0 +1,122 @@
+name: API Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Nightly at 02:30 UTC — off-peak for both the Heroku-hosted API and runner queues
+    - cron: "30 2 * * *"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Postman environment to run against
+        type: choice
+        options:
+          - production
+          - local
+        default: production
+
+permissions:
+  contents: read
+
+concurrency:
+  # Event name is part of the group so the nightly cron never cancels
+  # (or gets cancelled by) a push-triggered run on the same ref.
+  group: api-tests-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api-tests:
+    name: Newman collection run
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # Falls back to production for push / PR / schedule events
+      TARGET_ENV: ${{ inputs.environment || 'production' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start local Restful Booker (Docker)
+        if: env.TARGET_ENV == 'local'
+        run: |
+          docker run -d -p 3001:3001 --name restful-booker mwinteringham/restfulbooker
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3001/ping && exit 0
+            sleep 2
+          done
+          echo "Restful Booker container failed to become healthy" >&2
+          exit 1
+
+      # Extra flags appended after `npm test --` override the base script's
+      # defaults (newman: last occurrence of a flag wins), so the collection
+      # path and base invocation live in exactly one place: package.json.
+      - name: Run full collection (cli + htmlextra + junit + json)
+        run: >
+          npm test --
+          -e environments/${TARGET_ENV}.postman_environment.json
+          --reporters cli,htmlextra,junit,json
+          --reporter-htmlextra-export reports/html/index.html
+          --reporter-junit-export reports/junit/results.xml
+          --reporter-json-export reports/json/full-run.json
+
+      - name: Data-driven regression (3 iterations)
+        run: >
+          npm test --
+          -e environments/${TARGET_ENV}.postman_environment.json
+          -d data/booking-test-data.json
+          --reporters cli,junit,json
+          --reporter-junit-export reports/junit/data-driven.xml
+          --reporter-json-export reports/json/data-driven.json
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-html-report
+          path: reports/html/
+          retention-days: 30
+
+      - name: Upload machine-readable results (JUnit + JSON)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-junit-results
+          path: |
+            reports/junit/
+            reports/json/
+          retention-days: 30
+
+      - name: Write run summary
+        if: always()
+        run: |
+          node <<'EOF' >> "$GITHUB_STEP_SUMMARY"
+          const fs = require('fs');
+          console.log('## API Test Results\n');
+          let files = [];
+          try { files = fs.readdirSync('reports/json').filter(f => f.endsWith('.json')); } catch {}
+          if (files.length === 0) {
+            console.log('No results generated.');
+            process.exit(0);
+          }
+          console.log('| Run | Iterations | Requests | Assertions | Failed |');
+          console.log('|---|---|---|---|---|');
+          for (const f of files) {
+            // newman's own run stats — no XML parsing, exact numbers
+            const { run } = JSON.parse(fs.readFileSync(`reports/json/${f}`, 'utf8'));
+            const s = run.stats;
+            console.log(`| ${f.replace('.json', '')} | ${s.iterations.total} | ${s.requests.total} | ${s.assertions.total} | ${s.assertions.failed} |`);
+          }
+          EOF
