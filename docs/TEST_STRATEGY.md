@@ -63,6 +63,7 @@ Environments differ **only in data** (`baseUrl`, `maxResponseTimeMs`, credential
 - **htmlextra** for human-readable evidence: per-request assertions, request/response bodies, and per-iteration breakdowns — the artifact you attach to a bug report.
 - **JUnit XML** for machine consumption: CI test annotations today, dashboards/test-management ingestion tomorrow.
 - In CI, both reports are uploaded as artifacts (`newman-html-report`, `newman-junit-results`, 30-day retention) and a summary table is written to the GitHub Actions step summary so results are visible without downloading anything.
+- Runs on `main` additionally publish the HTML report to GitHub Pages, giving stakeholders a stable URL for the latest results without needing repository access to artifacts.
 
 ## 7. CI Integration
 
